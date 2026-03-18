@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_2/register_page.dart';
 import 'package:flutter_application_2/utility.dart';
+import 'package:flutter_application_2/configurations.dart';
+import 'content_page.dart';
 
 void main() {
  runApp(const MyApp());
@@ -21,7 +23,6 @@ class MyApp extends StatelessWidget {
  }
 }
 
-
 class MyHomePage extends StatefulWidget {
  const MyHomePage({super.key, required this.title});
 
@@ -40,17 +41,36 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
  void validate() {
-   setState(() {
-     _userIDErrorText = _setUserIDErrorText(_userID.text);
-     _passwordErrorText = _setPasswordErrorText(_password.text);
-   });
- }
+    setState(() {
+      _userIDErrorText = _setUserIDErrorText(_userID.text);
+      _passwordErrorText = _setPasswordErrorText(_password.text);
+    });
+
+    // Only check login if no field errors
+    if (_userIDErrorText == null && _passwordErrorText == null) {
+      bool isValid = Configurations.validateLogin(
+        _userID.text.trim(),
+        _password.text.trim(),
+      );
+
+      if (isValid) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Login Successful')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Invalid credentials')),
+        );
+      }
+    }
+  }
 
 
  String? _setUserIDErrorText(String value) {
    if (value.isEmpty) return 'Please enter email ID';
-   if (!Utility.validateEmail(value))
+   if (!Utility.validateEmail(value)) {
      return 'Please enter valid email ID';
+   }
    return null;
  }
 
@@ -83,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
                    decoration: InputDecoration(
                      labelText: 'User ID',
                      errorText: _userIDErrorText,
-                     hintText: 'aniket.patankar@gmail.com',
+                     hintText: 'your.email@example.com',
                      border: OutlineInputBorder(
                        borderRadius: BorderRadius.circular(20),
                      ),
@@ -109,8 +129,20 @@ class _MyHomePageState extends State<MyHomePage> {
            ElevatedButton(onPressed: validate, child: Text('Login')),
            ElevatedButton(onPressed: (){
              Navigator.push(context,MaterialPageRoute(builder: (context)=>RegisterPage()
-             ));
+             ),
+             );
            }, child: Text('Sign Up')),
+           ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ContentPage(),
+                ),
+              );
+            },
+            child: Text("content"),
+          ),
          ],
        ),
      ),
