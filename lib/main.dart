@@ -3,14 +3,23 @@ import 'package:flutter_application_2/register_page.dart';
 import 'package:flutter_application_2/utility.dart';
 import 'package:flutter_application_2/configurations.dart';
 import 'content_page.dart';
-import 'product_view.dart'; 
+import 'product_view.dart';
+import 'todo_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +28,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Login'),
+      home: isLoggedIn
+          ? const ToDoPage()
+          : const MyHomePage(title: 'Login'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -34,13 +44,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _userID = TextEditingController(),
-      _password = TextEditingController();
+  final _userID = TextEditingController();
+  final _password = TextEditingController();
 
   String? _userIDErrorText, _passwordErrorText;
+  bool isLoading = false;
 
-  void validate() {
+  Future<void> validate() async {
+    if (isLoading) return;
+
     setState(() {
+      isLoading = true;
       _userIDErrorText = _setUserIDErrorText(_userID.text);
       _passwordErrorText = _setPasswordErrorText(_password.text);
     });
@@ -52,28 +66,45 @@ class _MyHomePageState extends State<MyHomePage> {
       );
 
       if (isValid) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login Successful')),
+        await saveLoginState();
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ToDoPage()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Invalid credentials')),
+          const SnackBar(content: Text('Invalid credentials')),
         );
       }
     }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> saveLoginState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
   }
 
   String? _setUserIDErrorText(String value) {
     if (value.isEmpty) return 'Please enter email ID';
-    if (!Utility.validateEmail(value)) {
-      return 'Please enter valid email ID';
-    }
+    if (!Utility.validateEmail(value)) return 'Please enter valid email ID';
     return null;
   }
 
   String? _setPasswordErrorText(String value) {
     if (value.isEmpty) return 'Please enter Password';
     return null;
+  }
+
+  @override
+  void dispose() {
+    _userID.dispose();
+    _password.dispose();
+    super.dispose();
   }
 
   @override
@@ -87,31 +118,23 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // USER ID FIELD
+
             Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: ValueListenableBuilder<TextEditingValue>(
-                valueListenable: _userID,
-                builder: (context, value, child) {
-                  _userIDErrorText = _setUserIDErrorText(value.text);
-                  return TextField(
-                    controller: _userID,
-                    decoration: InputDecoration(
-                      labelText: 'User ID',
-                      errorText: _userIDErrorText,
-                      hintText: 'your.email@example.com',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  );
-                },
+              padding: const EdgeInsets.all(10),
+              child: TextField(
+                controller: _userID,
+                decoration: InputDecoration(
+                  labelText: 'User ID',
+                  errorText: _userIDErrorText,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
               ),
             ),
 
-            // PASSWORD FIELD
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10),
               child: TextField(
                 obscureText: true,
                 controller: _password,
@@ -125,39 +148,31 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
 
-            // LOGIN BUTTON
             ElevatedButton(
-              onPressed: validate,
-              child: Text('Login'),
+              onPressed: isLoading ? null : validate,
+              child: const Text('Login'),
             ),
 
-            // SIGN UP BUTTON
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => RegisterPage(),
-                  ),
+                  MaterialPageRoute(builder: (context) => RegisterPage()),
                 );
               },
-              child: Text('Sign Up'),
+              child: const Text('Sign Up'),
             ),
 
-            // CONTENT BUTTON
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => ContentPage(),
-                  ),
+                  MaterialPageRoute(builder: (context) => ContentPage()),
                 );
               },
-              child: Text("content"),
+              child: const Text("content"),
             ),
 
-            // ✅ NEW PRODUCTS BUTTON
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -167,16 +182,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 );
               },
-              child: Text("products"),
+              child: const Text("products"),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ToDoPage(),
+                  ),
+                );
+              },
+              child: const Text("ToDo"),
             ),
           ],
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

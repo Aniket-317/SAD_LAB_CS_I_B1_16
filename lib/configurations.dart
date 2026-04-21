@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 
 class Configurations {
 
- static List<Map<String,String>> credentials = [
-   {'userid':'vit1@vit.edu','password':'Vit@1234'},
-   {'userid':'1321a@viit.ac.in','password':'Vit@1321a'}
- ];
+  static List<Map<String, String>> credentials = [
+    {'userid': 'vit1@vit.edu', 'password': 'Vit@1234'},
+    {'userid': '1321a@viit.ac.in', 'password': 'Vit@1321a'}
+  ];
 
- static List<Attendance> attendance = [
+  static List<Attendance> attendance = [
     Attendance(date: "02-02-2026", status: 1),
     Attendance(date: "09-02-2026", status: 0),
     Attendance(date: "16-02-2026", status: 1),
@@ -35,37 +35,29 @@ class Configurations {
   ];
 
   static ValueNotifier<List<Attendance>> attendanceNotifier =
-    ValueNotifier(attendance);
+      ValueNotifier(attendance);
 
- static bool validateEmail(String text) {
-   return RegExp(
-     r"^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z]{2,4}){1,2}$",
-   ).hasMatch(text);
- }
-
-static bool validateLogin(String userid, String password) {
-  for (var cred in credentials) {
-    if (cred['userid'] == userid && cred['password'] == password) {
-      return true;
-    }
+  static bool validateEmail(String text) {
+    return RegExp(
+      r"^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z]{2,4}){1,2}$",
+    ).hasMatch(text);
   }
-  return false;
-}
 
-static bool isUserUnique(String userid) {
-  for (var cred in credentials) {
-    if (cred['userid'] == userid) {
-      return false; // already exists
+  static bool validateLogin(String userid, String password) {
+    for (var cred in credentials) {
+      if (cred['userid'] == userid && cred['password'] == password) {
+        return true;
+      }
     }
+    return false;
   }
-  return true; // unique
-}
 
-//  static bool validatePassword(String text) {
-//    return RegExp(
-//      r"^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*@[a-zA-Z0-9]+(\.[a-zA-Z]{2,4}){1,2}$",
-//    ).hasMatch(text);
-//  }
-
-
+  static bool isUserUnique(String userid) {
+    for (var cred in credentials) {
+      if (cred['userid'] == userid) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

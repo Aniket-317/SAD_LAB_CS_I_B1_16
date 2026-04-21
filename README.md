@@ -21,3 +21,9 @@
 ## Lab 4 Output Screenshots
 
 <img src = "output_screenshots/lab4_1.png" width = "250">
+
+## Lab 5 Output Screenshots
+
+<img src = "output_screenshots/lab5_1.png" width = "250">
+<img src = "output_screenshots/lab5_2.png" width = "250">
+<img src = "output_screenshots/lab5_3.png" width = "250">
